@@ -31,17 +31,26 @@ import {
 
 
 const images = [
-  'frisbee.jpg',
-  'frisbee_2.jpg',
-  'backpackman.jpg',
-  'boy_doughnut.jpg',
-  'soccer.png',
-  'with_computer.jpg',
-  'snowboard.jpg',
-  'person_bench.jpg',
-  'skiing.jpg',
-  'fire_hydrant.jpg',
-  'kyte.jpg',
+  'File1.jpg',
+  'File2.jpg',
+  'File3.jpg',
+  'File4.jpg',
+  'File5.jpg',
+  'File6.jpg',
+  'File7.jpg',
+  'File8.jpg',
+  'File9.jpg',
+  'File10.jpg',
+  'File11.jpg',
+  'File12.jpg',
+  'File13.jpg',
+  'File14.jpg',
+  'File15.jpg',
+  'File16.jpg',
+  'File17.jpg',
+  'File18.jpg',
+  'File19.jpg',
+  'File20.jpg',
   'looking_at_computer.jpg',
   'tennis.jpg',
   'tennis_standing.jpg',
@@ -57,12 +66,32 @@ const images = [
   'two_on_bench.jpg',
 ];
 
+function download(data, filename, type) {
+  var file = new Blob([data], {type: type});
+  if (window.navigator.msSaveOrOpenBlob) // IE10+
+      window.navigator.msSaveOrOpenBlob(file, filename);
+  else { // Others
+      var a = document.createElement("a"),
+              url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);  
+      }, 0); 
+  }
+}
+
+var poseKeypoint = [];
+
 /**
  * Draws a pose if it passes a minimum confidence onto a canvas.
  * Only the pose's keypoints that pass a minPartConfidence are drawn.
  */
 function drawResults(canvas, poses, minPartConfidence, minPoseConfidence) {
-  renderImageToCanvas(image, [513, 513], canvas);
+  renderImageToCanvas(image, [4000, 4000], canvas);
   const ctx = canvas.getContext('2d');
   poses.forEach((pose) => {
     if (pose.score >= minPoseConfidence) {
@@ -72,6 +101,8 @@ function drawResults(canvas, poses, minPartConfidence, minPoseConfidence) {
 
       if (guiState.showSkeleton) {
         drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+        // poseKeypoint.push(pose.keypoints);
+        // console.log(pose.keypoints);
       }
 
       if (guiState.showBoundingBox) {
@@ -82,7 +113,7 @@ function drawResults(canvas, poses, minPartConfidence, minPoseConfidence) {
 }
 
 const imageBucket =
-    'https://storage.googleapis.com/tfjs-models/assets/posenet/';
+    'http://127.0.0.1:1234/warrior2/';
 
 async function loadImage(imagePath) {
   const image = new Image();
@@ -132,6 +163,7 @@ function disposePoses() {
  * Loads an image, feeds it into posenet the posenet model, and
  * calculates poses based on the model outputs
  */
+var flag = true;
 async function testImageAndEstimatePoses(net) {
   setStatusText('Predicting...');
   document.getElementById('results').style.display = 'none';
@@ -161,6 +193,32 @@ async function testImageAndEstimatePoses(net) {
   setStatusText('');
   document.getElementById('results').style.display = 'block';
   input.dispose();
+  
+  // if (flag === true){
+  //   runner();
+  //   flag = false;
+  // }
+}
+
+function runner() {
+  var counter = 12;
+  var interval = setInterval(function() { 
+
+    if (counter == 159) { 
+        counter++;
+        guiState.image = `File${counter}.jpg`;
+        testImageAndEstimatePoses(guiState.net).then(todo => {
+          download(JSON.stringify(poseKeypoint), "fails.txt", "txt")
+        });
+    } else if (counter <= 159) { 
+        counter++;
+        guiState.image = `File${counter}.jpg`;
+        testImageAndEstimatePoses(guiState.net);
+  }
+    else { 
+        clearInterval(interval);
+    }
+  }, 5000);
 }
 
 /**
@@ -183,10 +241,10 @@ async function reloadNetTestImageAndEstimatePoses(net) {
   testImageAndEstimatePoses(guiState.net);
 }
 
-const defaultQuantBytes = 2;
+const defaultQuantBytes = 4; //2;
 
-const defaultMobileNetMultiplier = isMobile() ? 0.50 : 0.75;
-const defaultMobileNetStride = 16;
+const defaultMobileNetMultiplier = 1; //isMobile() ? 0.50 : 0.75;
+const defaultMobileNetStride = 8; //16;
 const defaultMobileNetInputResolution = 513;
 
 const defaultResNetMultiplier = 1.0;
@@ -202,12 +260,12 @@ let guiState = {
     multiplier: defaultMobileNetMultiplier,
     quantBytes: defaultQuantBytes,
   },
-  image: 'tennis_in_crowd.jpg',
+  image: 'File1.jpg',
   multiPoseDetection: {
     minPartConfidence: 0.1,
     minPoseConfidence: 0.2,
     nmsRadius: 20.0,
-    maxDetections: 15,
+    maxDetections: 1,
   },
   showKeypoints: true,
   showSkeleton: true,
