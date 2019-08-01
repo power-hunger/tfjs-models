@@ -194,10 +194,10 @@ async function testImageAndEstimatePoses(net) {
   document.getElementById('results').style.display = 'block';
   input.dispose();
   
-  // if (flag === true){
-  //   runner();
-  //   flag = false;
-  // }
+  if (flag === true){
+    runner();
+    flag = false;
+  }
 }
 
 function runner() {
